@@ -7,15 +7,21 @@ import 'package:firebase_database/firebase_database.dart';
 import 'firebase_options.dart';
 import 'ui/login_page.dart';
 
-final GetIt sl = GetIt.instance;
+final getIt = GetIt.instance;
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Register Firebase services
-  sl.registerLazySingleton(() => FirebaseAuth.instance);
-  sl.registerLazySingleton(() => FirebaseDatabase.instance);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Set Firebase Auth language code explicitly to avoid locale null warning
+  FirebaseAuth.instance.setLanguageCode('en'); // or device locale if you want
+
+  // Register Firebase instances in GetIt service locator
+  getIt.registerLazySingleton(() => FirebaseAuth.instance);
+  getIt.registerLazySingleton(() => FirebaseDatabase.instance);
 
   runApp(const MyApp());
 }
@@ -26,8 +32,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Finance App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
