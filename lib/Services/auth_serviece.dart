@@ -8,7 +8,6 @@ class AuthService {
   User? _user;
   static AuthService? _instance;
 
-  // Singleton pattern
   static AuthService get instance {
     _instance ??= AuthService._();
     return _instance!;
@@ -26,7 +25,6 @@ class AuthService {
   bool get isSignedIn => _user != null;
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  // Login with email & password
   Future<bool> login(String email, String password) async {
     try {
       final credential = await _firebaseAuth.signInWithEmailAndPassword(
@@ -43,7 +41,6 @@ class AuthService {
     }
   }
 
-  // Register only Firebase Auth user (no Firestore)
   Future<bool> createUser(String email, String password) async {
     try {
       final credential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -60,7 +57,6 @@ class AuthService {
     }
   }
 
-  /// Register new user and save additional data in Firestore
   Future<bool> registerUserWithData({
     required String email,
     required String password,
@@ -71,7 +67,6 @@ class AuthService {
     try {
       final success = await createUser(email, password);
       if (success && _user != null) {
-        // Write user profile data in Firestore
         await _firestore.collection('users').doc(_user!.uid).set({
           'uid': _user!.uid,
           'email': email,
@@ -86,7 +81,7 @@ class AuthService {
       return false;
     } catch (e) {
       print('Error during registration with data: $e');
-      // Clean up user if Firestore write failed
+
       if (_user != null) {
         await _user!.delete();
         _user = null;
@@ -96,7 +91,6 @@ class AuthService {
     }
   }
 
-  // Get user data from Firestore by uid
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     try {
       final snapshot = await _firestore.collection('users').doc(uid).get();
@@ -109,7 +103,6 @@ class AuthService {
     }
   }
 
-  // Update user data in Firestore by uid
   Future<void> updateUserData({
     required String uid,
     required Map<String, dynamic> updates,
@@ -122,7 +115,6 @@ class AuthService {
     }
   }
 
-  // Sign out current user
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
@@ -133,12 +125,10 @@ class AuthService {
     }
   }
 
-  // Get current Firebase user (fresh instance)
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
   }
 
-  // Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
@@ -148,7 +138,6 @@ class AuthService {
     }
   }
 
-  // Handle FirebaseAuthException error messages
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'weak-password':

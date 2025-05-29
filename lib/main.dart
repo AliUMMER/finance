@@ -1,8 +1,9 @@
+import 'package:finance/Services/database_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 import 'ui/login_page.dart';
@@ -16,12 +17,14 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Set Firebase Auth language code explicitly to avoid locale null warning
-  FirebaseAuth.instance.setLanguageCode('en'); // or device locale if you want
 
-  // Register Firebase instances in GetIt service locator
-  getIt.registerLazySingleton(() => FirebaseAuth.instance);
-  getIt.registerLazySingleton(() => FirebaseDatabase.instance);
+  FirebaseAuth.instance.setLanguageCode('en');
+
+
+  getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  getIt.registerLazySingleton<FirebaseFirestore>(
+      () => FirebaseFirestore.instance);
+  getIt.registerLazySingleton<DatabaseService>(() => DatabaseService());
 
   runApp(const MyApp());
 }

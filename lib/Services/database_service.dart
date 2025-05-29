@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
-  final CollectionReference _userCollection =
-      FirebaseFirestore.instance.collection('users');
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Create user document in Firestore
+  CollectionReference get _users => _firestore.collection('users');
+
   Future<void> createUser({
     required String uid,
     required String email,
@@ -12,38 +12,52 @@ class DatabaseService {
     required String address,
     required String phone,
   }) async {
-    try {
-      await _userCollection.doc(uid).set({
-        'uid': uid,
-        'email': email,
-        'companyName': companyName,
-        'address': address,
-        'phone': phone,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      print("User data stored for $uid");
-    } catch (e) {
-      print("Error storing user data: $e");
-      throw e;
+    await _users.doc(uid).set({
+      'uid': uid,
+      'email': email,
+      'companyName': companyName,
+      'address': address,
+      'phone': phone,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> createTransaction({
+    required String uid,
+    required String date,
+    required int cashIn,
+    required int cashOut,
+    required String description,
+  }) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('transactions')
+        .doc();
+
+    await docRef.set({
+      'enteredDate': date,
+      'cashIn': cashIn,
+      'cashOut': cashOut,
+      'description': description,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> saveTransaction(String userId, Map<String, dynamic> data) async {
+    final txns = _users.doc(userId).collection('transactions');
+
+    if (!data.containsKey('createdAt')) {
+      data['createdAt'] = FieldValue.serverTimestamp();
     }
+    await txns.add(data);
   }
 
-  /// Get user data
-  Future<DocumentSnapshot> getUser(String uid) async {
-    return await _userCollection.doc(uid).get();
-  }
-
-  /// Stream user data
-  Stream<DocumentSnapshot> streamUser(String uid) {
-    return _userCollection.doc(uid).snapshots();
-  }
-
-  /// Delete user data
-  Future<void> deleteUser(String uid) async {
-    try {
-      await _userCollection.doc(uid).delete();
-    } catch (e) {
-      throw Exception("Failed to delete user: $e");
-    }
+  Stream<QuerySnapshot> streamTransactions(String uid) {
+    return _users
+        .doc(uid)
+        .collection('transactions')
+        .orderBy('createdAt', descending: true)
+        .snapshots();
   }
 }

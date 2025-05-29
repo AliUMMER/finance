@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 
 class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
@@ -20,7 +22,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    // Clean up controllers when widget disposed
     _companyName.dispose();
     _email.dispose();
     _address.dispose();
